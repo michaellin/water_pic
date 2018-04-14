@@ -9,6 +9,7 @@ typedef unsigned int    uint16_t;
 typedef signed int      int16_t;
 
 typedef enum PIC12_PINS {
+    pin_RA0,
     pin_RA1,
     pin_RA2,
     pin_RA3,

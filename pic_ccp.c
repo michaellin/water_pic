@@ -11,27 +11,20 @@
  */
 void pic_ccp_pwm_init(PIC12_PIN_t pin) {
     switch (pin) {  // disable pwm pin output for the moment
-      case pin_RA1:
-        TRISAbits.TRISA1 = 1;
-        break;
       case pin_RA2:
         TRISAbits.TRISA2 = 1;
-        break;
-      case pin_RA3:
-        TRISAbits.TRISA3 = 1;
-        break;
-      case pin_RA4:
-        TRISAbits.TRISA4 = 1;
+		APFCONbits.CCP1SEL=1;       // The CCP1SEL bit selects which pin the PWM output is on.
         break;
       case pin_RA5:
         TRISAbits.TRISA5 = 1;
+		APFCONbits.CCP1SEL=1;       // The CCP1SEL bit selects which pin the PWM output is on.
         break;
       default:
         break;
     }
 
     CCP1CONbits.CCP1M=0x0C;     // select PWM mode for CCP module
-    CCP1CONbits.P1M=0x00;	      // select single output on CCP1 pin (RA5)
+    CCP1CONbits.P1M=0x00;	    // select single output on CCP1 pin
 
     CCPR1L =  0x00;             // clear high 8 bits of PWM duty cycle
     CCP1CONbits.DC1B=0x00;	    // clear low 2 bits of PWM Duty cycle
@@ -40,17 +33,8 @@ void pic_ccp_pwm_init(PIC12_PIN_t pin) {
     T2CONbits.T2CKPS=0x00;      // select TMR2 prescalar as divide by 1 as per our example above
 
     switch (pin) {  // turn PWM output back on
-      case pin_RA1:
-        TRISAbits.TRISA1 = 0;
-        break;
       case pin_RA2:
         TRISAbits.TRISA2 = 0;
-        break;
-      case pin_RA3:
-        TRISAbits.TRISA3 = 0;
-        break;
-      case pin_RA4:
-        TRISAbits.TRISA4 = 0;
         break;
       case pin_RA5:
         TRISAbits.TRISA5 = 0;
