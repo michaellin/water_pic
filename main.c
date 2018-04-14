@@ -41,6 +41,8 @@
 //***********************************************************************************
 
 #include <xc.h> // include standard header file
+#include "pic_ccp.h"
+#include "pic_osc.h"
 
 // set Config bits
 #pragma config FOSC=INTOSC, PLLEN=OFF, WDTE=OFF, MCLRE=ON,
@@ -52,16 +54,6 @@
 
 
 //**********************************************************************************
-// This subroutine takes in a 10 bit number and sets the duty cycle register
-// for the PWM accordingly
-//**********************************************************************************
-void SetPWMDutyCyle(unsigned int duty_cycle_value)
-{
-    CCP1CONbits.DC1B = duty_cycle_value & 0x03; //first set the 2 lsb bits
-    CCPR1L =  (duty_cycle_value >> 2);           //now set upper 8 msb bits
-}
-
-//**********************************************************************************
 //*****************   main routine   ***********************************************
 //**********************************************************************************
 void main ( ) 
@@ -70,10 +62,7 @@ void main ( )
     
     /* PIC Init */
     // set up oscillator control register
-    OSCCONbits.SPLLEN=0;    // PLL is disabled
-    OSCCONbits.IRCF=0x0F;   //set OSCCON IRCF bits to select OSC frequency=16Mhz
-    OSCCONbits.SCS=0x02;    //set the SCS bits to select internal oscillator block
-    // OSCON should be 0x7Ah now.
+    pic_osc_init(osc_16_mhz_hf);
 
     // Set up I/O pins
     ANSELAbits.ANSELA=0;    // set all analog pins to digital I/O
@@ -94,38 +83,10 @@ void main ( )
                                 // RA5 instead then set this bit to a 1.
 
     
-
-    //******************************************************************************************
-    // PWM Period = (1/Fosc) * 4 * (TMR2 Prescaler)* (PR2+1)
-    //******************************************************************************************
-    // Here are sample PWM periods for different TMR2 Prescalar values for Fosc=16Mhz and PR2=255
-    //******************************************************************************************
-    // TMR2 Prescalar=1: PWM Period = (1/16000000)*4*1*256 = 64 us or 15.63 khz
-    // TMR2 Prescalar=4: PWM Period = (1/16000000)*4*4*256 = 256 us or 3.91 khz
-    // TMR2 Prescalar=16: PWM Period = (1/16000000)*4*16*256= 1.024 ms or .976 khz
-    // TMR2 Prescalar=64: PWM Period = (1/16000000)*4*64*256= 4.096 ms or .244 khz
-    //
-    // For this example we will choose the PWM period of 64us (15.63 kHz) so most people
-    // will not be able to hear it.
-
-    // ***** Setup PWM output ******************************************************
-
-    TRISAbits.TRISA2 = 1;       // disable pwm pin output for the moment
-
-    CCP1CONbits.CCP1M=0x0C;     // select PWM mode for CCP module
-    CCP1CONbits.P1M=0x00;	// select single output on CCP1 pin (RA5)
-    
-    PR2 = 0xff;                 // set PWM period as 255 per our example above
-
-    CCPR1L =  0x00;             // clear high 8 bits of PWM duty cycle
-    CCP1CONbits.DC1B=0x00;	// clear low 2 bits of PWM Duty cycle
-
-                                // Note: PWM uses TMR2 so we need to configure it
-    PIR1bits.TMR2IF=0;		// clear TMR2 interrupt flag
-    T2CONbits.T2CKPS=0x00;      // select TMR2 prescalar as divide by 1 as per our example above
-    T2CONbits.TMR2ON=1;		// turn TMR2 on
-
-    TRISAbits.TRISA2 = 0;	// turn PWM output back on
+    pic_ccp_pwm_init(pin_RA2);
+    pic_ccp_set_period(255);
+    pic_ccp_set_compare(255);
+    pic_ccp_pwm_enable_clock();
 
     //***********************************************************************************************************
     // Now lets look at adjusting the brightness of the LED by changing the PWM duty cycle.
@@ -149,14 +110,14 @@ void main ( )
     // in between each step. After the ramp is up to 100%, the loop starts over again at 0%
 
     do{
-
-       DutyCycle=0;
-       while (DutyCycle <= 1023)
-       {
-            SetPWMDutyCyle(DutyCycle);
-            DutyCycle = DutyCycle + 32;
-            __delay_ms(100);
-       }
+        pic_ccp_set_compare(1000);
+//       DutyCycle=0;
+//       while (DutyCycle <= 1023)
+//       {
+//            pic_ccp_set_compare(DutyCycle);
+//            DutyCycle = DutyCycle + 32;
+//            __delay_ms(100);
+//       }
 
     } while (1);
 

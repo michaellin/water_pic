@@ -9,21 +9,21 @@
  *  Initialization of ccp module in pwm mode.
  *
  */
-void pic_ccp_pwm_init(PIC12_PINS pin) {
+void pic_ccp_pwm_init(PIC12_PIN_t pin) {
     switch (pin) {  // disable pwm pin output for the moment
-      case RA1:
+      case pin_RA1:
         TRISAbits.TRISA1 = 1;
         break;
-      case RA2:
+      case pin_RA2:
         TRISAbits.TRISA2 = 1;
         break;
-      case RA3:
+      case pin_RA3:
         TRISAbits.TRISA3 = 1;
         break;
-      case RA4:
+      case pin_RA4:
         TRISAbits.TRISA4 = 1;
         break;
-      case RA5:
+      case pin_RA5:
         TRISAbits.TRISA5 = 1;
         break;
       default:
@@ -40,19 +40,19 @@ void pic_ccp_pwm_init(PIC12_PINS pin) {
     T2CONbits.T2CKPS=0x00;      // select TMR2 prescalar as divide by 1 as per our example above
 
     switch (pin) {  // turn PWM output back on
-      case RA1:
+      case pin_RA1:
         TRISAbits.TRISA1 = 0;
         break;
-      case RA2:
+      case pin_RA2:
         TRISAbits.TRISA2 = 0;
         break;
-      case RA3:
+      case pin_RA3:
         TRISAbits.TRISA3 = 0;
         break;
-      case RA4:
+      case pin_RA4:
         TRISAbits.TRISA4 = 0;
         break;
-      case RA5:
+      case pin_RA5:
         TRISAbits.TRISA5 = 0;
         break;
       default:
@@ -103,7 +103,7 @@ void pic_ccp_set_period(uint8_t period_val) {
  *  PWM Period = (CCP1L:CCP1CON<5:4>) * TOSC * (TMR2 Prescale Value)
  *
  */
-void pic_ccp_set_compare(uint8_t compare_val) {
+void pic_ccp_set_compare(uint16_t compare_val) {
     CCP1CONbits.DC1B=  compare_val & 0x03;        // set the 2 lsb bits of PWM duty cycle
     CCPR1L =  (compare_val >> 2);                 // set the 8 msb bits of PWM duty cycle
     return;
